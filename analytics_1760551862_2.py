@@ -1,35 +1,23 @@
-/**
- * analytics_1760551862_2.py - React Component
- * Generated: 2025-10-15 23:41:00
- * Author: Shivam Sahu
- */
+-- analytics_1760551862_2.py
+-- Analytics SQL Queries
+-- Generated: 2025-10-15 23:41:00
+-- Author: Shivam Sahu
 
-class AnalyticsComponent {
-    constructor() {
-        this.data = null;
-        this.initialize();
-    }
-    
-    initialize() {
-        console.log('Analytics component initialized');
-        this.loadData();
-    }
-    
-    loadData() {
-        // Load data from API
-        fetch('/api/data')
-            .then(response => response.json())
-            .then(data => {
-                this.data = data;
-                this.render();
-            });
-    }
-    
-    render() {
-        // Render component
-        console.log('Component rendered');
-    }
-}
+-- Create analytics table
+CREATE TABLE IF NOT EXISTS analytics_data (
+    id SERIAL PRIMARY KEY,
+    metric_name VARCHAR(255) NOT NULL,
+    metric_value DECIMAL(15,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-// Initialize component
-new AnalyticsComponent();
+-- Insert sample data
+INSERT INTO analytics_data (metric_name, metric_value) VALUES
+('Total Users', 1000),
+('Active Sessions', 500),
+('Revenue', 10000.50);
+
+-- Query for recent data
+SELECT * FROM analytics_data 
+WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+ORDER BY created_at DESC;
