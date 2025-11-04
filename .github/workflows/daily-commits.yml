@@ -29,56 +29,184 @@ jobs:
         git config --global user.email "shivamsahugzp@gmail.com"
         git config --global user.name "Shivam Sahu"
         
-    - name: Create realistic commits
+    - name: Create human-like commits
       run: |
-        echo "Creating realistic commits for today..."
+        echo "Creating natural commits for today..."
         
-        # Generate random number of commits (1-3)
-        COMMIT_COUNT=$((RANDOM % 3 + 1))
+        # Get current day of week (0=Sunday, 6=Saturday)
+        DAY_OF_WEEK=$(date +%w)
+        
+        # Weekend behavior - 30% chance of commits, usually 1 commit if any
+        if [ $DAY_OF_WEEK -eq 0 ] || [ $DAY_OF_WEEK -eq 6 ]; then
+          if [ $((RANDOM % 100)) -lt 30 ]; then
+            COMMIT_COUNT=1
+          else
+            echo "Weekend - no commits today"
+            exit 0
+          fi
+        else
+          # Weekday behavior - more natural distribution
+          # 10% chance of 0 commits, 40% chance of 1, 35% chance of 2, 15% chance of 3
+          RAND=$((RANDOM % 100))
+          if [ $RAND -lt 10 ]; then
+            echo "No commits today - rest day"
+            exit 0
+          elif [ $RAND -lt 50 ]; then
+            COMMIT_COUNT=1
+          elif [ $RAND -lt 85 ]; then
+            COMMIT_COUNT=2
+          else
+            COMMIT_COUNT=3
+          fi
+        fi
+        
+        echo "Will create $COMMIT_COUNT commits today"
+        
+        # Realistic file types and names
+        FILE_TYPES=("utils" "api" "core" "helpers" "models" "services" "lib" "config" "tests")
+        FILE_EXTENSIONS=("py" "js" "ts" "md" "yaml" "json")
         
         for i in $(seq 1 $COMMIT_COUNT); do
-          # Create a realistic file
-          TIMESTAMP=$(date +%s)
-          FILENAME="commit_$(date +%Y%m%d)_${TIMESTAMP}_${i}.py"
+          # Natural file naming
+          FILE_TYPE=${FILE_TYPES[$RANDOM % ${#FILE_TYPES[@]}]}
+          EXT=${FILE_EXTENSIONS[$RANDOM % ${#FILE_EXTENSIONS[@]}]}
+          RAND_ID=$(openssl rand -hex 4)
+          FILENAME="${FILE_TYPE}_${RAND_ID}.${EXT}"
           
-          cat > "$FILENAME" << 'PYTHON'
-# Analytics Module
-# Generated automatically
+          # Create realistic file content based on type
+          if [ "$EXT" = "py" ]; then
+            cat > "$FILENAME" << 'PYTHON'
+"""
+Helper utility functions
+"""
+import logging
+from typing import Optional, Dict, Any
 
-def main():
-    print("Processing data")
+logger = logging.getLogger(__name__)
+
+def process_data(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Process and validate input data"""
+    if not data:
+        logger.warning("Empty data provided")
+        return None
+    
+    try:
+        # Process logic here
+        result = {k: v for k, v in data.items() if v is not None}
+        return result
+    except Exception as e:
+        logger.error(f"Error processing data: {e}")
+        return None
 
 if __name__ == "__main__":
-    main()
+    test_data = {"key1": "value1", "key2": None}
+    result = process_data(test_data)
+    print(result)
 PYTHON
+          elif [ "$EXT" = "js" ] || [ "$EXT" = "ts" ]; then
+            cat > "$FILENAME" << 'JS'
+/**
+ * Utility functions for data processing
+ */
+
+export function formatData(data: any[]): any[] {
+  if (!data || !Array.isArray(data)) {
+    console.warn('Invalid data provided');
+    return [];
+  }
+  
+  return data.map(item => ({
+    ...item,
+    processed: true,
+    timestamp: new Date().toISOString()
+  }));
+}
+
+export function validateInput(input: string): boolean {
+  return input && input.trim().length > 0;
+}
+JS
+          elif [ "$EXT" = "md" ]; then
+            cat > "$FILENAME" << 'MD'
+# Documentation
+
+## Overview
+This module handles data processing and validation.
+
+## Usage
+```python
+from utils import process_data
+
+result = process_data({"key": "value"})
+```
+
+## Features
+- Data validation
+- Error handling
+- Logging support
+MD
+          else
+            cat > "$FILENAME" << 'CONFIG'
+{
+  "version": "1.0.0",
+  "settings": {
+    "enabled": true,
+    "timeout": 30,
+    "retries": 3
+  }
+}
+CONFIG
+          fi
           
-          # Add and commit
           git add "$FILENAME"
           
+          # Natural commit messages - no dates, no patterns
           COMMIT_MESSAGES=(
-            "Fix bug - $(date +%Y-%m-%d)"
-            "Add feature - $(date +%Y-%m-%d)"
-            "Update docs - $(date +%Y-%m-%d)"
-            "Refactor code - $(date +%Y-%m-%d)"
-            "Add test - $(date +%Y-%m-%d)"
-            "Fix typo - $(date +%Y-%m-%d)"
-            "Optimize performance - $(date +%Y-%m-%d)"
+            "refactor: improve error handling in $FILE_TYPE module"
+            "fix: resolve issue with data validation"
+            "feat: add new utility functions"
+            "docs: update $FILE_TYPE documentation"
+            "chore: clean up unused imports"
+            "perf: optimize $FILE_TYPE processing"
+            "test: add unit tests for $FILE_TYPE"
+            "style: format code according to standards"
+            "fix: correct typo in $FILE_TYPE"
+            "feat: implement new feature in $FILE_TYPE"
+            "refactor: simplify $FILE_TYPE logic"
+            "docs: improve code comments"
+            "chore: update dependencies"
+            "fix: handle edge case in $FILE_TYPE"
+            "feat: enhance $FILE_TYPE functionality"
+            "perf: reduce memory usage in $FILE_TYPE"
+            "test: fix failing test case"
+            "refactor: extract common logic"
+            "docs: add examples to README"
+            "chore: remove deprecated code"
           )
           
           RANDOM_MSG=${COMMIT_MESSAGES[$RANDOM % ${#COMMIT_MESSAGES[@]}]}
           
-          # Set commit time to night shift hours (5 PM - 11 PM IST)
-          HOUR=$((RANDOM % 7 + 17))  # 17-23 (5 PM - 11 PM)
+          # Natural time distribution throughout the day
+          # Work hours: 9 AM - 11 PM IST (3:30 AM - 5:30 PM UTC)
+          # Peak hours get more commits
+          HOUR_UTC=$((RANDOM % 14 + 4))  # 4-17 UTC (9:30 AM - 11 PM IST)
           MIN=$((RANDOM % 60))
           
-          # Get current date and set time to night shift hours
-          CURRENT_DATE=$(date +%Y-%m-%d)
-          GIT_DATE="${CURRENT_DATE} ${HOUR}:${MIN}:00"
+          # Add some randomness - sometimes earlier, sometimes later
+          if [ $((RANDOM % 100)) -lt 20 ]; then
+            HOUR_UTC=$((RANDOM % 6 + 18))  # Evening commits (6 PM - 11 PM UTC = 11:30 PM - 4:30 AM IST)
+          fi
+          
+          CURRENT_DATE=$(date -u +%Y-%m-%d)
+          GIT_DATE="${CURRENT_DATE} ${HOUR_UTC}:${MIN}:00 +0000"
           
           GIT_AUTHOR_DATE="$GIT_DATE" GIT_COMMITTER_DATE="$GIT_DATE" \
-          git commit -m "$RANDOM_MSG"
+          git commit -m "$RANDOM_MSG" --quiet
           
           echo "Created commit: $RANDOM_MSG"
+          
+          # Small delay between commits (humans don't commit instantly)
+          sleep $((RANDOM % 3 + 1))
         done
         
     - name: Push to GitHub
@@ -93,11 +221,10 @@ PYTHON
         git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
         
         # Push to the current branch
-        git push origin HEAD:$BRANCH
+        git push origin HEAD:$BRANCH --quiet
         echo "✅ Commits pushed successfully"
         
     - name: Send notification
       if: success()
       run: |
         echo "🎉 Daily commits created and pushed to GitHub!"
-        echo "Created commits on $(date +%Y-%m-%d)"
